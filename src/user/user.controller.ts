@@ -6,9 +6,7 @@ import {
   Patch,
   Param,
   Delete,
-  Res,
 } from '@nestjs/common';
-import { Response } from 'express';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -28,26 +26,19 @@ export class UserController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string, @Res() res: Response) {
+  async findOne(@Param('id') id: string) {
     const response = await this.userService.findOne(id);
-    res.status(response.status).send(response.message);
+    return response;
   }
 
   @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-    @Res() res: Response,
-  ) {
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     const response = await this.userService.update(id, updateUserDto);
-    res.status(response.status).send(response.message);
+    return response;
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string, @Res() res: Response) {
-    const response = await this.userService.remove(id);
-    console.log('dddddddddddddddddddd', response.message);
-
-    res.status(response.status).send(response.message);
+  async remove(@Param('id') id: string) {
+    await this.userService.remove(id);
   }
 }

@@ -11,7 +11,7 @@ import {
   getAllTrackFromBd,
   getTrackByIdFromBd,
   updateTrackByIdFromBd,
-  deleteTrackByIdFromBd
+  deleteTrackByIdFromBd,
 } from 'src/db/track.db';
 
 @Injectable()
@@ -40,18 +40,18 @@ export class TrackService {
   async update(id: string, createTrackDto: CreateTrackDto) {
     if (!validate(id)) {
       throw new BadRequestException('ID is not valid');
+    }
 
-      const track = await updateTrackByIdFromBd(id);
+    const track = await updateTrackByIdFromBd(id);
 
-      if (!track) {
-        throw new NotFoundException('Track with this ID does not exist');
-      } else {
-        track.name = createTrackDto.name;
-        track.artistId = createTrackDto.artistId;
-        track.albumId = createTrackDto.albumId;
-        track.duration = createTrackDto.duration;
-        return track;
-      }
+    if (!track) {
+      throw new NotFoundException('Track with this ID does not exist');
+    } else {
+      track.name = createTrackDto.name;
+      track.artistId = createTrackDto.artistId;
+      track.albumId = createTrackDto.albumId;
+      track.duration = createTrackDto.duration;
+      return track;
     }
   }
 

@@ -1,7 +1,13 @@
 import { v4 } from 'uuid';
 import { Artist, ArtistINput } from 'src/artist/interfaces/artist.interface';
 
-const artists: Artist[] = [];
+const firstArtist = {
+  id: '72f95ab0-9f25-4789-b722-1e7f3e1d83ef',
+  name: 'second track',
+  grammy: true,
+};
+
+const artists: Artist[] = [firstArtist];
 
 async function createArtistInBd(data: ArtistINput): Promise<Artist> {
   const newArtist: Artist = {

@@ -1,7 +1,23 @@
 import { v4 } from 'uuid';
 import { Track, TrackInput } from 'src/track/interfaces/track.interface';
 
-const tracks: Track[] = [];
+const firstTrack = {
+  id: '46bc02f1-993a-4b22-bc42-e94b628553f9',
+  name: 'sakewewe2',
+  artistId: '2008',
+  albumId: '',
+  duration: 23,
+};
+
+const secondTrack = {
+  id: 'b42b2a60-ea64-4a08-9f50-2ad8f14804c8',
+  name: 'second',
+  artistId: '2008',
+  albumId: '',
+  duration: 23,
+};
+
+const tracks: Track[] = [firstTrack, secondTrack];
 
 async function createTrackInBd(data: TrackInput): Promise<Track> {
   const newTrack: Track = {

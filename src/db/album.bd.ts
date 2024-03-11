@@ -1,7 +1,14 @@
 import { v4 } from 'uuid';
 import { Album, AlbumInput } from 'src/album/interfaces/album.interface';
 
-const albums: Album[] = [];
+const firstAlbum = {
+  id: '2885bd33-d5e8-4192-882c-6f07dd9669ae',
+  name: 'second track',
+  year: 2008,
+  artistId: '',
+};
+
+const albums: Album[] = [firstAlbum];
 
 async function createAlbumInBd(data: AlbumInput): Promise<Album> {
   const newAlbum: Album = {

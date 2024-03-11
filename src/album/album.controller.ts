@@ -31,8 +31,8 @@ export class AlbumController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAlbumDto: UpdateAlbumDto) {
-    return this.albumService.update(id, updateAlbumDto);
+  update(@Param('id') id: string, @Body() createAlbumDto: CreateAlbumDto) {
+    return this.albumService.update(id, createAlbumDto);
   }
 
   @Delete(':id')

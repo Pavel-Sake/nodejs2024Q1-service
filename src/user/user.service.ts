@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   ForbiddenException,
   NotFoundException,
@@ -7,31 +6,28 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import {
-  createUserInBd,
-  getAllUsersFromBd,
-  getUsersByIdFromBd,
-  updateUserByIdFromBd,
-  deleteUsersByIdFromBd,
-} from 'src/db/user.db';
-import { validate } from 'uuid';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
+  constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+  ) {}
+
   async create(createUserDto: CreateUserDto) {
-    return await createUserInBd(createUserDto);
+    const newUser = this.usersRepository.create(createUserDto);
+    return await this.usersRepository.save(newUser);
   }
 
-  findAll() {
-    const allUsers = getAllUsersFromBd();
-    return allUsers;
+  async findAll(): Promise<User[]> {
+    return await this.usersRepository.find();
   }
 
-  async findOne(id: string) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
-    const user = await getUsersByIdFromBd(id);
+  async findOne(id: string): Promise<User | null> {
+    const user = await this.usersRepository.findOneBy({ id: id });
 
     if (user) {
       return user;
@@ -41,18 +37,15 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
-    const user = await updateUserByIdFromBd(id);
+    const user = await this.usersRepository.findOneBy({ id: id });
 
     if (!user) {
       throw new NotFoundException('User with this ID does not exist');
     } else {
       if (user.password === updateUserDto.oldPassword) {
-        user.password = updateUserDto.newPassword;
-        user.version = user.version += 1;
-        user.updatedAt = Date.now();
+        await this.usersRepository.update(id, {
+          password: updateUserDto.newPassword,
+        });
         return user;
       } else {
         throw new ForbiddenException('oldPassword is wrong');
@@ -60,14 +53,11 @@ export class UserService {
     }
   }
 
-  async remove(id: string) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
-    const user = await deleteUsersByIdFromBd(id);
+  async remove(id: string): Promise<void> {
+    const user = await this.usersRepository.delete(id);
 
-    if (user) {
-      throw new HttpException('Forbidden', 204);
+    if (user.affected) {
+      throw new HttpException('Deleted', 204);
     } else {
       throw new NotFoundException('User with this ID does not exist');
     }

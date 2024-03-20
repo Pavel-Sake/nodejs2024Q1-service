@@ -1,36 +1,29 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  HttpException,
-} from '@nestjs/common';
-import { validate } from 'uuid';
+import { Injectable, NotFoundException, HttpException } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import {
-  createAlbumInBd,
-  getAllAlbumsFromBd,
-  getAlbumByIdFromBd,
-  updateAlbumByIdFromBd,
-  deleteAlbumByIdFromBd,
-} from 'src/db/album.bd';
+
+import { Album } from './entities/album.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AlbumService {
+  constructor(
+    @InjectRepository(Album)
+    private albumRepository: Repository<Album>,
+  ) {}
   async create(createAlbumDto: CreateAlbumDto) {
-    return await createAlbumInBd(createAlbumDto);
+    const album = await this.albumRepository.create(createAlbumDto);
+    this.albumRepository.save(album);
+    return album;
   }
 
   async findAll() {
-    return await getAllAlbumsFromBd();
+    return await this.albumRepository.find();
   }
 
   async findOne(id: string) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
-    const album = await getAlbumByIdFromBd(id);
-
+    const album = await this.albumRepository.findOneBy({ id: id });
     if (album) {
       return album;
     } else {
@@ -38,30 +31,23 @@ export class AlbumService {
     }
   }
 
-  async update(id: string, createAlbumDto: CreateAlbumDto) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
+  async update(id: string, updateAlbumDto: UpdateAlbumDto) {
+    const album = await this.albumRepository.update(id, { ...updateAlbumDto });
 
-    const album = await updateAlbumByIdFromBd(id);
+    console.log('aaaaa', album);
 
-    if (!album) {
+    if (!album.affected) {
       throw new NotFoundException('Track with this ID does not exist');
     } else {
-      album.name = createAlbumDto.name;
-      album.year = createAlbumDto.year;
-      album.artistId = createAlbumDto.artistId;
+      const album = await this.albumRepository.findOneBy({ id: id });
       return album;
     }
   }
 
   async remove(id: string) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
-    const album = await deleteAlbumByIdFromBd(id);
+    const album = await this.albumRepository.delete(id);
 
-    if (album) {
+    if (album.affected) {
       throw new HttpException('Forbidden', 204);
     } else {
       throw new NotFoundException('Album with this ID does not exist');

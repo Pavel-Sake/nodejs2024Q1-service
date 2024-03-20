@@ -6,9 +6,11 @@ import {
   Param,
   Patch,
   Delete,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ArtistService } from './artist.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
+import { UpdateArtistDto } from './dto/update-artist.dto';
 
 @Controller('artist')
 export class ArtistController {
@@ -25,17 +27,20 @@ export class ArtistController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.artistService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() createArtistDto: CreateArtistDto) {
-    return this.artistService.update(id, createArtistDto);
+  update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateArtistDto: UpdateArtistDto,
+  ) {
+    return this.artistService.update(id, updateArtistDto);
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string) {
+  delete(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.artistService.delete(id);
   }
 }

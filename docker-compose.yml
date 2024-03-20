@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: app
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src
+    networks:
+      - my-network
+    restart: always
+  postgres:
+    build: ./database/
+    container_name: postgres
+    env_file:
+      - .env
+    networks:
+      - my-network
+networks:
+  my-network:
+    driver: bridge

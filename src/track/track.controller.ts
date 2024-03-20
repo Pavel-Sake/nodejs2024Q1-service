@@ -6,36 +6,41 @@ import {
   Param,
   Patch,
   Delete,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
+import { UpdateTrackDto } from './dto/update-track.dto';
 import { TrackService } from './track.service';
 
 @Controller('track')
 export class TrackController {
-  constructor(private readonly TrackService: TrackService) {}
+  constructor(private readonly trackService: TrackService) {}
 
   @Post()
   create(@Body() createTrackDto: CreateTrackDto) {
-    return this.TrackService.create(createTrackDto);
+    return this.trackService.create(createTrackDto);
   }
 
   @Get()
   findAll() {
-    return this.TrackService.findAll();
+    return this.trackService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.TrackService.findOne(id);
+  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.trackService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() createTrackDto: CreateTrackDto) {
-    return this.TrackService.update(id, createTrackDto);
+  update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateTrackDto: UpdateTrackDto,
+  ) {
+    return this.trackService.update(id, updateTrackDto);
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.TrackService.delete(id);
+  delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.trackService.delete(id);
   }
 }

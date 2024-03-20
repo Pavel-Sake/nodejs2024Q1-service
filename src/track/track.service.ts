@@ -1,34 +1,28 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  HttpException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, HttpException } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
-import { validate } from 'uuid';
-import {
-  createTrackInBd,
-  getAllTrackFromBd,
-  getTrackByIdFromBd,
-  updateTrackByIdFromBd,
-  deleteTrackByIdFromBd,
-} from 'src/db/track.db';
+import { Track } from './entities/track.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UpdateTrackDto } from './dto/update-track.dto';
 
 @Injectable()
 export class TrackService {
+  constructor(
+    @InjectRepository(Track)
+    private trackRepository: Repository<Track>,
+  ) {}
+
   async create(createTrackDto: CreateTrackDto) {
-    return await createTrackInBd(createTrackDto);
+    const track = await this.trackRepository.create(createTrackDto);
+    return await this.trackRepository.save(track);
   }
 
   async findAll() {
-    return await getAllTrackFromBd();
+    return await this.trackRepository.find();
   }
 
   async findOne(id: string) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
-    const track = await getTrackByIdFromBd(id);
+    const track = await this.trackRepository.findOneBy({ id: id });
 
     if (track) {
       return track;
@@ -37,32 +31,22 @@ export class TrackService {
     }
   }
 
-  async update(id: string, createTrackDto: CreateTrackDto) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
+  async update(id: string, updateTrackDto: UpdateTrackDto) {
+    const track = await this.trackRepository.update(id, { ...updateTrackDto });
 
-    const track = await updateTrackByIdFromBd(id);
-
-    if (!track) {
-      throw new NotFoundException('Track with this ID does not exist');
-    } else {
-      track.name = createTrackDto.name;
-      track.artistId = createTrackDto.artistId;
-      track.albumId = createTrackDto.albumId;
-      track.duration = createTrackDto.duration;
+    if (track.affected) {
+      const track = await this.trackRepository.findOneBy({ id: id });
       return track;
+    } else {
+      throw new NotFoundException('Track with this ID does not exist');
     }
   }
 
   async delete(id: string) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
-    const track = await deleteTrackByIdFromBd(id);
+    const track = await this.trackRepository.delete(id);
 
-    if (track) {
-      throw new HttpException('Forbidden', 204);
+    if (track.affected) {
+      throw new HttpException('Deleted', 204);
     } else {
       throw new NotFoundException('Track with this ID does not exist');
     }

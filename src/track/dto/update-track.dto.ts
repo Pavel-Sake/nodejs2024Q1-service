@@ -6,19 +6,23 @@ import {
   IsInt,
 } from 'class-validator';
 
-export class UpdateAlbumDto {
+export class UpdateTrackDto {
+  @IsString()
   @IsDefined()
   @IsNotEmpty()
   @IsOptional()
   name: string;
 
-  @IsInt()
-  @IsNotEmpty()
-  @IsDefined()
-  @IsOptional()
-  year: number;
-
   @IsString()
   @IsOptional()
   artistId: string | null;
+
+  @IsString()
+  @IsOptional()
+  albumId: string | null;
+
+  @IsInt()
+  @IsNotEmpty()
+  @IsOptional()
+  duration: number;
 }

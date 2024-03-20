@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -26,17 +27,20 @@ export class AlbumController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.albumService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() createAlbumDto: CreateAlbumDto) {
-    return this.albumService.update(id, createAlbumDto);
+  update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateAlbumDto: UpdateAlbumDto,
+  ) {
+    return this.albumService.update(id, updateAlbumDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.albumService.remove(id);
   }
 }

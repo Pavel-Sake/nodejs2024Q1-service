@@ -1,34 +1,28 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  HttpException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, HttpException } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
-import {
-  createArtistInBd,
-  getAllArtistsFromBd,
-  getArtistByIdFromBd,
-  updateArtistByIdFromBd,
-  deleteArtistByIdFromBd,
-} from 'src/db/artist.bd';
-import { validate } from 'uuid';
+import { Repository } from 'typeorm';
+import { Artist } from './entities/artist.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UpdateArtistDto } from './dto/update-artist.dto';
 
 @Injectable()
 export class ArtistService {
+  constructor(
+    @InjectRepository(Artist)
+    private artistRepository: Repository<Artist>,
+  ) {}
+
   async create(createArtistDto: CreateArtistDto) {
-    return await createArtistInBd(createArtistDto);
+    const newArtist = await this.artistRepository.create(createArtistDto);
+    return await this.artistRepository.save(newArtist);
   }
 
   async findAll() {
-    return await getAllArtistsFromBd();
+    return await this.artistRepository.find();
   }
 
   async findOne(id: string) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
-    const artist = await getArtistByIdFromBd(id);
+    const artist = await this.artistRepository.findOneBy({ id: id });
 
     if (artist) {
       return artist;
@@ -37,29 +31,22 @@ export class ArtistService {
     }
   }
 
-  async update(id: string, createArtistDto: CreateArtistDto) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
-    const artist = await updateArtistByIdFromBd(id);
+  async update(id: string, updateArtistDto: UpdateArtistDto) {
+    const artist = await this.artistRepository.update(id, updateArtistDto);
 
-    if (!artist) {
-      throw new NotFoundException('Artist with this ID does not exist');
-    } else {
-      artist.name = createArtistDto.name;
-      artist.grammy = createArtistDto.grammy;
+    if (artist.affected) {
+      const artist = await this.artistRepository.findOneBy({ id: id });
       return artist;
+    } else {
+      throw new NotFoundException('Artist with this ID does not exist');
     }
   }
 
   async delete(id: string) {
-    if (!validate(id)) {
-      throw new BadRequestException('ID is not valid');
-    }
-    const artist = await deleteArtistByIdFromBd(id);
+    const artist = await this.artistRepository.delete(id);
 
-    if (artist) {
-      throw new HttpException('Forbidden', 204);
+    if (artist.affected) {
+      throw new HttpException('Deleted', 204);
     } else {
       throw new NotFoundException('Artist with this ID does not exist');
     }
